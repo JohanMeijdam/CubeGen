@@ -2114,7 +2114,6 @@ my ($PerlString, $PerlResult, $LoopElement);
 	if ($Condition eq "none") {
 		return $True;
 	} elsif (substr($Condition,0,6) eq "CHILD(") {
-
 		$P = length($Condition);
 		if (substr($Condition,$P-1) ne ")") {
 			print CODE "\n[ERROR: Missing end parenthesis in $Condition ]\n";
@@ -2130,7 +2129,7 @@ my ($PerlString, $PerlResult, $LoopElement);
 		}
 		$J = $NodeFirst[$INode];
 		while ($J > -1) {
-			if ($NodeString[$J] eq $ChildTag) {
+			if ($NodeString[$J] eq $ChildTag || $ChildTag eq '*') {
 				if ($ChildCondition ne 'none') {
 					$I = $NodeFirst[$J];
 					while ($I > -1) {
