@@ -1818,6 +1818,9 @@ my ($I, $V, $JN, $JV, $K, $LocN, $LocI, $FlagTwoTimes, $IndexN, $IndexV);
 				$NameUpper = uc $Name;
 				$NameLower = lc $Name;
 				$HtmlStringE = encode_entities($Name);
+				# Support templates in HTML
+				$HtmlStringE =~ s/\[/&#91;/g;
+				$HtmlStringE =~ s/\]/&#93;/g;
 				$HtmlString = $HtmlStringE;
 				$HtmlString =~ s/\n/<br>/g;
 				$NameCamel = $NameLower;
@@ -2372,5 +2375,9 @@ my ($ReplaceString) = @_;
 	$ReplaceString =~ s/\x0D/%0D/g;
 	$ReplaceString =~ s/\x0A/%0A/g;
 	$ReplaceString =~ s/\x09/%09/g;
+	$ReplaceString =~ s/\x3C/%3C/g;
+	$ReplaceString =~ s/\x3E/%3E/g;
+	$ReplaceString =~ s/\x5B/%5B/g;
+	$ReplaceString =~ s/\x5D/%5D/g;
 	return $ReplaceString;
 }
