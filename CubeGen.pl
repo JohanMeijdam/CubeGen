@@ -406,13 +406,9 @@ my ($IncludeFile, $INCLUDE);
 				$IncludeString = <INCLUDE>;
 				GetBody($IncludeString);
 
-# Regex is toch niet zo krachtig dus dan maar zo
 				$_[0] = substr($_[0],0,$IndexIncl) . $IncludeString . substr($_[0],$Index2+2);
-#				$IncludeFile =~ s/\x5c/\x5cx5c/g ;
-#				$IncludeFile =~ s/\x2e/\x5cx2e/g ;
-#				$_[0] =~ s/\x5b\x5bINCLUDE\x2c$IncludeFile\x5d\x5d/$IncludeString/g ;
- 
-			} else {
+
+				} else {
 				print CODE "\n[ERROR: End of INCLUDE-tag ']]' not found]\n";
 				exit;
 			}
@@ -1256,7 +1252,7 @@ my (@TagValidSafe);
 		$StackTagValid[$IndexV] = 0;
 	}	
 
-	if ($FromPntr > -1 && $ToPntr > -1) {
+	if ($FromPntr > -1 && $ToPntr > -1 && ValidateLoopSpec($From, $To, $FromPntr, $ToPntr)) {
 		if ($FromPntr >= $ToPntr) {
 			for ($I = $IndexN; $I >= 0; $I--) {
 				if (($StackTag[$I] eq $Tag  || $Tag eq '*' || $Tag eq '>*') && $StackTagIndex[$I] <= $FromPntr) {
@@ -1348,7 +1344,7 @@ my ($SaveName, @SaveValue, $SaveNumber, $SaveSubNumber, $SaveId);
 	$FromPntr = ProcessLocator ($StackIx[$Index],$StackIxValidH[$Index],$From);
 	$ToPntr   = ProcessLocator ($StackIx[$Index],$StackIxValidH[$Index],$To);
 
-	if ($FromPntr > -1 && $ToPntr > -1) {
+	if ($FromPntr > -1 && $ToPntr > -1 && ValidateLoopSpec($From, $To, $FromPntr, $ToPntr)) {
 		$SaveName = $StackName[$Index];
 		for ($V = 1; $V <= $NodeValueCount[$Index]; $V++) { $SaveValue[$V] = $NodeValue[$NodeValuePntr[$Index]+$V-1]; }
 		$SaveNumber = $StackNumber[$Index];
@@ -1392,6 +1388,32 @@ my ($N, $V);
 	$StackId[$Index] = $NodeId[$N];
 	$StackIxValidH[$Index] = $I;	
 
+}
+
+sub ValidateLoopSpec {
+my ($From, $To, $FromPntr, $ToPntr) = @_;
+my ($FromSequ, $ToSequ);
+
+	if (substr($From,0,1) eq "N") {
+		$FromSequ = 2;
+	} elsif (substr($From,0,1) eq "V") {
+		$FromSequ = 1;
+	} else {
+		$FromSequ = 0;
+	}
+
+	if (substr($To,0,1) eq "N") {
+		$ToSequ = 2;
+	} elsif (substr($To,0,1) eq "V") {
+		$ToSequ = 1;
+	} else {
+		$ToSequ = 0;
+	}
+	if (( $ToPntr > $FromPntr && $ToSequ < $FromSequ ) || ( $ToPntr < $FromPntr && $ToSequ > $FromSequ )) {
+		return 0;
+	} else {
+		return 1;
+	}
 }
 
 sub ProcessTemplateSegmentSequ {
@@ -1502,7 +1524,6 @@ my ($LoopLevel, $IndexLoop, $IndexEndloop, $IndexLeveling);
 	}
 }
 
-###########################
 sub ProcessTemplateTemplate {
 #
 # Voer Template vanuit Model uit.
@@ -1521,7 +1542,6 @@ my ($ModelTemplate);
 		if ($IndexColon > -1 && $IndexColon < $Index2) {
 			$ModelTemplate = "<<".substr($TemplateSegment, $IndexColon+1, $Index2-$IndexColon-1).">>";
 			PerformReplace ($ModelTemplate);
-###			print CODE "###".$ModelTemplate."###";
 			ProcessTemplateSegment ($FlagSequence, $NodeIndex, $DfltTag, $ModelTemplate);
 		} else {
 			print CODE "\n[ERROR: No semicolon in TEMPLATE]\n";
@@ -1533,7 +1553,6 @@ my ($ModelTemplate);
 	}
 	ProcessTemplateSegment ($FlagSequence, $NodeIndex, $DfltTag, substr($TemplateSegment, $IndexSegment));
 }
-#############################
 
 sub ProcessLeveling {
 #
