@@ -1,2 +1,16 @@
-
-AAA:&#91;&#91;TEST&#93;&#93;;
+All types in the hierachy with their left and right siblings
+<b>DDD111</b> left: right:
+<b>DDD121</b> left: right:DDD122
+<b>DDD122</b> left:DDD121 right:
+<b>DDD131</b> left: right:DDD132,DDD133
+<b>DDD132</b> left:DDD131 right:DDD133
+<b>DDD133</b> left:DDD132,DDD131 right:
+<b>CCC11</b> left: right:CCC12,CCC13
+<b>CCC12</b> left:CCC11 right:CCC13
+<b>CCC13</b> left:CCC12,CCC11 right:
+<b>CCC21</b> left: right:CCC22,CCC23
+<b>CCC22</b> left:CCC21 right:CCC23
+<b>CCC23</b> left:CCC22,CCC21 right:
+<b>BBB1</b> left: right:BBB2
+<b>BBB2</b> left:BBB1 right:
+<b>AAA</b> left: right:

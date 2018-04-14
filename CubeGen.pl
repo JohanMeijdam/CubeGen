@@ -1337,7 +1337,7 @@ sub ProcessForHLoop {
 my ($FlagSequence, $NodeIndex, $Tag,  $From, $To, $SepCond, $ForType, $TemplateSegment) = @_;
 my ($I, $Node, $V);
 my ($Index, $FromPntr, $ToPntr, $TagValidPntr, $CondNodeIndex, $Logical);
-my ($SaveName, @SaveValue, $SaveNumber, $SaveSubNumber, $SaveId);
+my ($SaveName, @SaveValue, $SaveNumber, $SaveSubNumber, $SaveId, $SaveIxValidH);
 
 	$Index = DetermineStackPointerTagN($Tag);
 
@@ -1350,6 +1350,7 @@ my ($SaveName, @SaveValue, $SaveNumber, $SaveSubNumber, $SaveId);
 		$SaveNumber = $StackNumber[$Index];
 		$SaveSubNumber = $StackSubNumber[$Index];
 		$SaveId = $StackId[$Index];
+		$SaveIxValidH = $StackIxValidH[$Index];
 
 		if ($FromPntr >= $ToPntr) {
 			for ($I = $FromPntr; $I >= $ToPntr; $I--) { 
@@ -1373,6 +1374,7 @@ my ($SaveName, @SaveValue, $SaveNumber, $SaveSubNumber, $SaveId);
 		$StackNumber[$Index] = $SaveNumber;
 		$StackSubNumber[$Index] = $SaveSubNumber;
 		$StackId[$Index] = $SaveId;
+		$StackIxValidH[$Index] = $SaveIxValidH;
 	}
 }
 
