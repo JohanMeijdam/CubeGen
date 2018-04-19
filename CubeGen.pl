@@ -1530,7 +1530,7 @@ sub ProcessTemplateTemplate {
 #
 # Voer Template vanuit Model uit.
 #
-# [[TEMPLATE:ref>]]
+# [[TEMPLATE:<ref>]]
 # ref = <tag>[(location)][property Number][:functie] 
 #
 my ($FlagSequence, $NodeIndex, $DfltTag, $TemplateSegment) = @_;
@@ -1544,6 +1544,13 @@ my ($ModelTemplate);
 		if ($IndexColon > -1 && $IndexColon < $Index2) {
 			$ModelTemplate = "<<".substr($TemplateSegment, $IndexColon+1, $Index2-$IndexColon-1).">>";
 			PerformReplace ($ModelTemplate);
+
+			ProcessIncludes ($ModelTemplate);
+			RemoveComment($ModelTemplate);
+			ProcessText ($ModelTemplate);
+			GetBody($ModelTemplate);
+			PerformPerl($ModelTemplate,"DECL"); 
+
 			ProcessTemplateSegment ($FlagSequence, $NodeIndex, $DfltTag, $ModelTemplate);
 		} else {
 			print CODE "\n[ERROR: No semicolon in TEMPLATE]\n";
