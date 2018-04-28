@@ -370,6 +370,7 @@ $StackName[0] = 'init';
 $StackValueCount[0] = 0;
 $StackIx[0] = 0;
 $StackIxValidH[0] = 0;
+$StackReplFunc[0] = '#';
 $StackValue[0][0] = 'init';
 $StackTemplateSegment[0] = 'init';
 $StackFlagSequence[0] = 0;
@@ -889,7 +890,7 @@ sub ProcessTemplateSegmentLoop {
 #
 my ($FlagSequence, $NodeIndex, $DfltTag, $TemplateSegment) = @_;
 my ($Index2, $Index3, $IndexSegment, $IndexC, $IndexColon, $IndexL);
-my ($Condition, $Type, $Tag, $Endtag, $Name);
+my ($Condition, $Type, $Tag, $Endtag, $Name, $LoopFunc, $ReplFunc);
 
 	$IndexSegment = 0;
 	$Index2 = index($TemplateSegment, ']]');
@@ -899,6 +900,24 @@ my ($Condition, $Type, $Tag, $Endtag, $Name);
 			$Tag = substr($TemplateSegment, $IndexC+1, $Index2-$IndexC-1);
 		} else {
 			print CODE "\n[ERROR: No comma in tag]\n";
+			exit;
+		}
+		if ($IndexC == 11) {
+			$LoopFunc = substr($TemplateSegment,6,5);
+			if ($LoopFunc eq '_HTML' || $LoopFunc eq '_PERC' || $LoopFunc eq 'NORM') {
+				$ReplFunc = substr($LoopFunc,1,1);
+			} else {
+				print CODE "\n[ERROR: Invalid loop function: $LoopFunc]\n";
+				exit;
+			}
+			if ($Tag eq '*' || $Tag eq '>*') {
+				print CODE "\n[ERROR: Wildcards not allowed by LOOP functions]\n";
+				exit;
+			}
+		} elsif ($IndexC == 6) {
+			$ReplFunc = '#';
+		} else {
+			print CODE "\n[ERROR: Invalid LOOP statemant]\n";
 			exit;
 		}
 		$IndexColon = index($Tag, ':');
@@ -913,7 +932,7 @@ my ($Condition, $Type, $Tag, $Endtag, $Name);
 		$Index3 = index($TemplateSegment, $EndTag, $IndexL);
 		if ($Index3 == $IndexL) {
 			$IndexSegment = $Index3 + length($EndTag);
-			ProcessLoop($FlagSequence, $NodeIndex, $Tag, $Condition, substr($TemplateSegment , $Index2+2, $Index3-$Index2-2));
+			ProcessLoop($FlagSequence, $NodeIndex, $Tag, $Condition, substr($TemplateSegment , $Index2+2, $Index3-$Index2-2), $ReplFunc);
 		} else {
 			print CODE "\n[ERROR: End tag $EndTag not matched]\n";
 			exit;
@@ -967,7 +986,7 @@ my ($IndentType, $Index2, $IndexSegment, $IndexColon, $IndexComma, $Tag, $I, $J)
  		if ($StackFlagSequence[$I]) {
  			ProcessSequence ($NodeIndex, $DfltTag, $StackTemplateSegment[$I]);
  		} else {
-			ProcessLoop($FlagSequence, $NodeIndex, $StackTag[$I], $StackCondition[$I], $StackTemplateSegment[$I]);
+			ProcessLoop($FlagSequence, $NodeIndex, $StackTag[$I], $StackCondition[$I], $StackTemplateSegment[$I], '#');
  		}
 		if ($IndentType eq 'TAB') {
 			$IndentLevel = $IndentLevel - 1;
@@ -983,15 +1002,26 @@ sub ProcessLoop {
 #
 # Lees de items bij de tag en voer de functie vul de stack en herhaal de hoofdfunctie voor ieder item.
 #
-my ($FlagSequence, $NodeIndex, $Tag, $Condition, $TemplateSegment) = @_;
-my ($I, $J, $TagParent, $Node);
-
+my ($FlagSequence, $NodeIndex, $Tag, $Condition, $TemplateSegment, $ReplFunc) = @_;
+my ($I, $J, $TagParent, $Node); 
+	
 	$StackIndex += 1;
 	if ($StackIndex > 9999) {
 		print CODE "\n[ERROR: Infinite REPEAT detected]\n";
 		exit;
 	}
 #print "+LOOP($StackIndex) $Tag:$StackTag[$StackIndex]:$StackTagIndex[$StackIndex]:$FlagSequence;\n";
+	if ($ReplFunc eq '#') {
+		if ($StackIndex > 0) {
+			$StackReplFunc[$StackIndex] = $StackReplFunc[$StackIndex-1];
+		}
+	} else {
+		if ($ReplFunc eq 'N') {
+			$StackReplFunc[$StackIndex] = '#';
+		} else {
+			$StackReplFunc[$StackIndex] = $ReplFunc;
+		}
+	}
 	$StackCondition[$StackIndex] = $Condition;
 	$StackFlagSequence[$StackIndex] = $FlagSequence;
 	$StackFlagWildcard[$StackIndex] = $Tag eq '*' || $Tag eq '>*' || $Tag eq '^';
@@ -1945,20 +1975,42 @@ my ($IndexFile, $Index2);
 		if ($Index2 > -1) {
 			$CodeFile = substr($_[0], $IndexFile+7, $Index2-$IndexFile-7);
 			if ($IndexFile > 0) {
-				print CODE substr($_[0],0,$IndexFile);
+				ExportCodeToFile(substr($_[0],0,$IndexFile));
 			}
 			print "Generating Code    : $CodeFile\n";
 			$CODE = "$CodeFile";
 			open CODE, ">$CODE" or die "Cannot open $CODE:$!";
 			if (length($_[0]) > $Index2+1) {
-				print CODE substr($_[0],$Index2+2);
+				ExportCodeToFile(substr($_[0],$Index2+2));
 			}
 		} else {
 			print CODE "\n[ERROR: End of FILE-tag ']]' not found]\n";
 			exit;
 		}
 	} else {
+		ExportCodeToFile($_[0]);
+	}
+}
+
+sub ExportCodeToFile {
+#
+# Finally export te code according the loop replace function
+#
+my ($ReplaceString);
+	if ($StackIndex == -1) {
 		print CODE $_[0];
+	} elsif ($StackReplFunc[$StackIndex] eq '#') {
+		print CODE $_[0];
+	} elsif ($StackReplFunc[$StackIndex] eq 'H') {
+		$ReplaceString = encode_entities($_[0]);
+		$ReplaceString =~ s/\n/<br>/g;
+		print CODE $ReplaceString;
+	} elsif ($StackReplFunc[$StackIndex] eq 'P') {
+		$ReplaceString = uri_escape($_[0]);
+		$ReplaceString =~ s/'/%27/g;
+		print CODE $ReplaceString;
+	} else {
+		print CODE "\n[ERROR: Invalid replace function]\n";;
 	}
 }
 
