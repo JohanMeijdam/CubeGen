@@ -370,7 +370,6 @@ $StackName[0] = 'init';
 $StackValueCount[0] = 0;
 $StackIx[0] = 0;
 $StackIxValidH[0] = 0;
-$StackReplFunc[0] = '#';
 $StackValue[0][0] = 'init';
 $StackTemplateSegment[0] = 'init';
 $StackFlagSequence[0] = 0;
@@ -382,6 +381,9 @@ $StackFlagPointer[0][0] = 0;
 $StackSelectedNode[0][0] = 0;
 # Indentation
 $IndentLevel = 0;
+# Loop HTML or PERC
+$ReplFuncIndex = -1;
+$ReplFuncStack[0] = '#';
 
 #print "---------------------------\n";
 ProcessTemplateSegment (0, 0, '#', $TemplateString);
@@ -904,7 +906,7 @@ my ($Condition, $Type, $Tag, $Endtag, $Name, $LoopFunc, $ReplFunc);
 		}
 		if ($IndexC == 11) {
 			$LoopFunc = substr($TemplateSegment,6,5);
-			if ($LoopFunc eq '_HTML' || $LoopFunc eq '_PERC' || $LoopFunc eq 'NORM') {
+			if ($LoopFunc eq '_HTML' || $LoopFunc eq '_PERC') {
 				$ReplFunc = substr($LoopFunc,1,1);
 			} else {
 				print CODE "\n[ERROR: Invalid loop function: $LoopFunc]\n";
@@ -1011,17 +1013,11 @@ my ($I, $J, $TagParent, $Node);
 		exit;
 	}
 #print "+LOOP($StackIndex) $Tag:$StackTag[$StackIndex]:$StackTagIndex[$StackIndex]:$FlagSequence;\n";
-	if ($ReplFunc eq '#') {
-		if ($StackIndex > 0) {
-			$StackReplFunc[$StackIndex] = $StackReplFunc[$StackIndex-1];
-		}
-	} else {
-		if ($ReplFunc eq 'N') {
-			$StackReplFunc[$StackIndex] = '#';
-		} else {
-			$StackReplFunc[$StackIndex] = $ReplFunc;
-		}
+	if ($ReplFunc ne '#') {
+		$ReplFuncIndex += 1;
+		$ReplFuncStack[$ReplFuncIndex] = $ReplFunc;
 	}
+
 	$StackCondition[$StackIndex] = $Condition;
 	$StackFlagSequence[$StackIndex] = $FlagSequence;
 	$StackFlagWildcard[$StackIndex] = $Tag eq '*' || $Tag eq '>*' || $Tag eq '^';
@@ -1096,6 +1092,9 @@ my ($I, $J, $TagParent, $Node);
 				last;
 			}
 		}
+	}
+	if ($ReplFunc ne '#') {
+		$ReplFuncIndex -= 1;
 	}
 #print "-LOOP($StackIndex) $Tag:$StackTag[$StackIndex]:$StackTagIndex[$StackIndex]:$FlagSequence;\n";
 	$StackIndex -= 1;
@@ -1996,21 +1995,23 @@ sub ExportCodeToFile {
 #
 # Finally export te code according the loop replace function
 #
-my ($ReplaceString);
-	if ($StackIndex == -1) {
-		print CODE $_[0];
-	} elsif ($StackReplFunc[$StackIndex] eq '#') {
-		print CODE $_[0];
-	} elsif ($StackReplFunc[$StackIndex] eq 'H') {
-		$ReplaceString = encode_entities($_[0]);
-		$ReplaceString =~ s/\n/<br>/g;
-		print CODE $ReplaceString;
-	} elsif ($StackReplFunc[$StackIndex] eq 'P') {
-		$ReplaceString = uri_escape($_[0]);
-		$ReplaceString =~ s/'/%27/g;
+my ($ReplaceString, $i);
+	if ($ReplFuncIndex > -1) {
+		$ReplaceString = $_[0];
+		for ($i=$ReplFuncIndex; $i>-1; $i--) {
+			if ($ReplFuncStack[$i] eq 'H') {
+				$ReplaceString = encode_entities($ReplaceString);
+				$ReplaceString =~ s/\n/<br>/g;
+			} elsif ($ReplFuncStack[$i] eq 'P') {
+				$ReplaceString = uri_escape($ReplaceString);
+				$ReplaceString =~ s/'/%27/g;
+			} else {
+				print CODE "\n[ERROR: Invalid replace function]\n";
+			}
+		}
 		print CODE $ReplaceString;
 	} else {
-		print CODE "\n[ERROR: Invalid replace function]\n";;
+		print CODE $_[0];
 	}
 }
 
