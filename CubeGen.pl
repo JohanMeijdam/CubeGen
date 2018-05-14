@@ -2340,7 +2340,7 @@ my ($PerlString, $PerlResult, $LoopElement);
 		}
 		$Id = substr($Condition,3,$P-4);
 		PerformReplace($Id);
-		if ($StackId[$StackIndex] eq $Id) {
+		if ($NodeId[$INode] eq $Id) {
 			return $True;
 		} else {
 			return $False;
