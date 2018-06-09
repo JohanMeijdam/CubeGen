@@ -1034,7 +1034,7 @@ my ($I, $J, $TagParent, $Node);
 			if ($I == 0) {
 				last;
 			}
-			if (($Tag ne '^' || $NodeString[$NodeParent[$I]] eq substr($Tag,1)) && EvaluateCondition($Condition, $I, $StackIndex, $Tag)) {
+			if (($Tag eq '^' || $NodeString[$NodeParent[$I]] eq substr($Tag,1)) && EvaluateCondition($Condition, $I, $StackIndex, $Tag)) {
 				last;
 			}
 			$I = $NodeParent[$NodeParent[$I]];
