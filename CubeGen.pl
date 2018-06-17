@@ -2227,7 +2227,6 @@ my ($PerlString, $PerlResult, $LoopElement);
 						}
 						$I = $NodeNext[$I];
 					}
-					return $False;
 				} else {
 					return $True;
 				}
@@ -2255,8 +2254,6 @@ my ($PerlString, $PerlResult, $LoopElement);
 				if ($ParentCondition ne 'none') {
 					if (EvaluateCondition($ParentCondition, $I, -1, $ParentTag)) {
 						return $True;
-					} else {
-						return $False;
 					}
 				} else {
 					return $True;
