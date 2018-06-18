@@ -1599,6 +1599,13 @@ sub ProcessLeveling {
 my ($StartTag, $EndTag, $LoopLevel, $IndexLeveling, $IndexLoop, $IndexEndloop);
 	$StartTag = "[[" . @_[1];
 	$EndTag = "[[END" . @_[1];
+	if (@_[1] ne 'LOOP') {
+		$EndTag = $EndTag . "]]";
+		if (@_[1] eq 'LOOP,*') {
+			# Avoid conflict with inverse * references 
+			$StartTag = $StartTag . "]]";
+		}
+	}
 	$IndexLeveling =  @_[2];
 	$LoopLevel = 1;
 	while($LoopLevel > 0) {
