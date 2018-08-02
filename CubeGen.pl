@@ -424,9 +424,10 @@ sub ProcessText {
 # Vervang de Textsegmenten
 # [[TEXT,name]]....<<T1>>....<<T2>>...[[ENDTEXT]]
 # <<TEXT,name[|]T1[|]T2[|]>>
+# <<TEXT:TABn,name[|]T1[|]T2[|]>>
 #
-my ($IndexText, $Index2, $Index3, $Index4, $I, $J);
-my ($TextIndex, @TextTag, @TextValue);
+my ($IndexText, $Index2, $Index3, $Index4, $IndexColon, $IndexC, $I, $J);
+my ($TextIndex, @TextTag, @TextValue, $IndentType, $TabCount);
 my ($Count, $TextName, $TextQualifier, $TextReplace, $TextReplVal, $TextParms);
 my ($IndexSep1, $IndexSep2, $ParmVal, $P, $FlagParms);
 
@@ -468,37 +469,65 @@ my ($IndexSep1, $IndexSep2, $ParmVal, $P, $FlagParms);
 	$Count = 0;
 	$IndexText = 0;
 	while($IndexText > -1) {
-		$IndexText = index($_[0], '<<TEXT,');
+		$IndexText = index($_[0], '<<TEXT');
 		if ($IndexText > -1) {
 			$Index2 = index($_[0], '>>', $IndexText);
 			if ($Index2 > -1) {
-				$Index4 = index($_[0], '[|]', $IndexText);
-				if (($Index4 <= -1) || ($Index4 > $Index2)) {
-					$Index4 = $Index2;
-				}
-				$Index3 = index($_[0], '.', $IndexText);
-				if (($Index3 > -1 ) && ($Index3 < $Index4)) {
-					$TextName = substr($_[0], $IndexText+7, $Index3-$IndexText-7);
-					$TextQualifier = substr($_[0], $Index3+1, $Index4-$Index3-1);
-					$TextReplace = $TextName . '.' . $TextQualifier;
+				$IndexC = index($_[0], ',', $IndexText);
+				if ($IndexC > -1 && $IndexC < $Index2) {
+					if ($IndexC-$IndexText == 6) {
+						$IndentType = '';
+						$TabCount = 0;
+					} else {
+						if (substr($_[0],$IndexText+6,1) eq ':') {
+							$IndentType = substr($_[0], $IndexText+6, $IndexC-$IndexText-6);
+						} else {
+							print CODE "\n[ERROR: No colon after TEXT]\n";
+							exit;
+						}
+						if ($IndentType eq ':TAB') {
+							$TabCount = 1;
+						} elsif (substr($IndentType,2) eq 'TAB') {
+							$TabCount = substr($IndentType,1,1);
+						} elsif ($IndentType eq ':') {
+							$TabCount = 0;
+						} else {
+							print CODE "\n[ERROR: Invalid indent type in TEXT]\n";
+							exit;
+						}
+					}
+					$Index4 = index($_[0], '[|]', $IndexC);
+					if (($Index4 <= -1) || ($Index4 > $Index2)) {
+						$Index4 = $Index2;
+					}
+					$Index3 = index($_[0], '.', $IndexC);
+					if (($Index3 > -1 ) && ($Index3 < $Index4)) {
+						$TextName = substr($_[0], $IndexC+1, $Index3-$IndexC-1);
+						$TextQualifier = substr($_[0], $Index3+1, $Index4-$Index3-1);
+						$TextReplace = $TextName . '.' . $TextQualifier;
+					} else {
+						$TextName = substr($_[0], $IndexC+1, $Index4-$IndexC-1);
+						$TextQualifier = '';
+						$TextReplace = $TextName;
+					}
+
+					if ($Index2 > $Index4) {
+						$FlagParms = 1;
+						$Index2 = index($_[0], '[|]>>', $IndexC);
+						if ($Index2 == -1) {
+							print CODE "\n[ERROR: End of TEXT-tag '[|]>>' not found]\n";
+							exit;
+						}  
+						$TextParms = substr($_[0], $Index4+3, $Index2-$Index4-3);
+						$TextReplace = $TextReplace . '[|]' . $TextParms . '[|]';
+					} else {
+						$FlagParms = 0;
+						$TextParms = '';
+					}
 				} else {
-					$TextName = substr($_[0], $IndexText+7, $Index4-$IndexText-7);
-					$TextQualifier = '';
-					$TextReplace = $TextName;
-				}
-				if ($Index2 > $Index4) {
-					$FlagParms = 1;
-					$Index2 = index($_[0], '[|]>>', $IndexText);
-					if ($Index2 == -1) {
-						print CODE "\n[ERROR: End of TEXT-tag '[|]>>' not found]\n";
-						exit;
-					}  
-					$TextParms = substr($_[0], $Index4+3, $Index2-$Index4-3);
-					$TextReplace = $TextReplace . '[|]' . $TextParms . '[|]';
- 				} else {
-					$FlagParms = 0;
-					$TextParms = '';
-				}
+					print CODE "\n[ERROR: No comma in TEXT]\n";
+					exit;
+				}			
 			} else {
 				print CODE "\n[ERROR: End of TEXT-tag '>>' not found]\n";
 				exit;
@@ -506,8 +535,13 @@ my ($IndexSep1, $IndexSep2, $ParmVal, $P, $FlagParms);
 			for ($I = 0; $I < $TextIndex; $I++) {
 				if ($TextTag[$I] eq $TextName) {
 					$TextReplVal = $TextValue[$I];
+					if ($TabCount > 0) {
+						for ($I = 1; $I <= $TabCount; $I++) {
+							$TextReplVal =~ s/\n/\n\t/g;
+						}		
+					}
 					if ( $TextQualifier ne '' ) {
-						$TextReplVal =~ s/<<TEXT,(.*?)(:|>)(.*?)(>{1,2})/<<TEXT,$1_$TextQualifier$2$3$4/g;
+						$TextReplVal =~ s/<<TEXT$IndentType,(.*?)(:|>)(.*?)(>{1,2})/<<TEXT,$1_$TextQualifier$2$3$4/g;
 					}
 					if ( $FlagParms ) {
 						$IndexSep2 = 0;
@@ -527,12 +561,12 @@ my ($IndexSep1, $IndexSep2, $ParmVal, $P, $FlagParms);
 							}
 						}	
 					}
-					$_[0] =~ s/\Q<<TEXT,$TextReplace>>\E/$TextReplVal/g;
+					$_[0] =~ s/\Q<<TEXT$IndentType,$TextReplace>>\E/$TextReplVal/g;
 					last;
 				}
 			}
 			if ($I == $TextIndex) {
-				$_[0] =~ s/\Q<<TEXT,$TextReplace>>\E/[ERROR: Text:$TextReplace not found]/g;
+				$_[0] =~ s/\Q<<TEXT$IndentType,$TextReplace>>\E/[ERROR: Text:$TextReplace not found]/g;
 			}
 			if ($Count > 1000) {
 				print CODE "\n[ERROR: Endless loop in text processing]\n";
@@ -954,7 +988,7 @@ sub ProcessTemplateSegmentRepeat {
 # [[ENDLOOP]]
 #
 my ($FlagSequence, $NodeIndex, $DfltTag, $TemplateSegment) = @_;
-my ($IndentType, $Index2, $IndexSegment, $IndexColon, $IndexComma, $Tag, $I, $J);
+my ($IndentType, $Index2, $IndexSegment, $IndexColon, $IndexComma, $Tag, $I, $J, $TabCount);
 
 	$Index2 = index($TemplateSegment, ']]');
 	if ($Index2 > -1) {
@@ -982,17 +1016,23 @@ my ($IndentType, $Index2, $IndexSegment, $IndexColon, $IndexComma, $Tag, $I, $J)
 		} else {
 			$I = $StackIndex;
 		}
-		if ($IndentType eq 'TAB') {
-			$IndentLevel = $IndentLevel + 1;
-		}
+		if ($IndentType eq 'none') {
+			$TabCount = 0;
+		} elsif ($IndentType eq 'TAB') {
+			$TabCount = 1;
+		} elsif (substr($IndentType,1) eq 'TAB') {
+			$TabCount = substr($IndentType,0,1);
+		} else {
+			print CODE "\n[ERROR: Invalid indent type in REPEAT]\n";
+			exit;
+		}		
+		$IndentLevel = $IndentLevel + $TabCount;
  		if ($StackFlagSequence[$I]) {
  			ProcessSequence ($NodeIndex, $DfltTag, $StackTemplateSegment[$I]);
  		} else {
 			ProcessLoop($FlagSequence, $NodeIndex, $StackTag[$I], $StackCondition[$I], $StackTemplateSegment[$I], '#');
  		}
-		if ($IndentType eq 'TAB') {
-			$IndentLevel = $IndentLevel - 1;
-		}
+		$IndentLevel = $IndentLevel - $TabCount;
 		$IndexSegment = $Index2 + 2;
 	} else {
 		print CODE "\n[ERROR: End of repeat tag ']]' not found]\n";
