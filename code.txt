@@ -52,3 +52,10 @@ BBB1
 						DDD131
 						DDD132
 						DDD133
+
+*****###
+SYS:AAA
+SYS:BBB###*****
+
+SYS:AAA
+SYS:BBB

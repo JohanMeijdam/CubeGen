@@ -1217,7 +1217,8 @@ sub ProcessTemplateSegmentFor {
 # Lees textsegmenten tussen een [[FOR...] en een [[ENDFOR]] match de tag met de node om vervolgens de functie voor het verwerken van de loops uit te voeren.
 #
 # [[FOR[H|V|][,<tag>]:<loopspec>:<seperator>]] 
-# [[FOR[H|V|]_CASE[,<tag>]:<loopspec>:<condition>]] 
+# [[FOR[H|V|]_CASE[,<tag>]:<loopspec>:<condition>]]
+# [[FOR[H|V|],ROOT]] 
 # [[ENDFOR]]
 #
 my ($FlagSequence, $NodeIndex, $DfltTag, $TemplateSegment) = @_;
@@ -1226,63 +1227,67 @@ my ($LoopSpec, $Tag, $SepCond, $ForType, $ForHV, $Inc);
 my ($IndexArrow, $From, $To);
 
 	$Index2 = index($TemplateSegment, ']]');
-	$IndexSegment = $Index2 + 2;
 	if ($Index2 > -1) {
-		$IndexColon = index($TemplateSegment, ':');
-		if ($IndexColon > -1 && $IndexColon < $Index2) {
-			$LoopSpec = substr($TemplateSegment, $IndexColon+1, $Index2-$IndexColon-1);
-		} else {
-			print CODE "\n[ERROR: No loop specification in FOR]\n";
-			exit;
-		}
-		$IndexComma = index(substr($TemplateSegment, 0, $IndexColon), ',');
-		if ($IndexComma > -1) {
-			$Tag = substr($TemplateSegment, $IndexComma+1, $IndexColon-$IndexComma-1);
-		} else {
-			if ($DfltTag eq '*') {
-				$Tag = $StackTag[$StackIndex];
-			} else {
-				$Tag = $DfltTag;
-			}
-		}
-		$IndexColon = index($LoopSpec,':');
-		if ($IndexColon > -1) {
-			$SepCond = substr($LoopSpec,$IndexColon+1);
-			$LoopSpec = substr($LoopSpec,0,$IndexColon);
-		} else {
-			$SepCond = '';
-		}
-		if (substr($TemplateSegment,5,1) eq 'H') {
-			$ForHV = 'H';
-			$Inc = 1;
-		} elsif (substr($TemplateSegment,5,1) eq 'V') {
-			$ForHV = 'V';
-			$Inc = 1;
-		} else {
-			$ForHV = 'V'; #default
-			$Inc = 0;
-		}
-		if (substr($TemplateSegment,5+$Inc,5) eq '_CASE') {
-			$ForType = 'C';
-			if ($SepCond eq '') {
-				print CODE "\n[ERROR: No condition in FOR..CASE]\n";
-				exit;
-			} 
-		} else {
-			$ForType = 'N'; 
-		}
+		$IndexSegment = $Index2 + 2;
 		$IndexL = ProcessLeveling($TemplateSegment,'FOR',$Index2);
-		$IndexArrow = index($LoopSpec,'>');
-		if ($IndexArrow > -1) {
-			$From = substr($LoopSpec,0,$IndexArrow);
-			$To = substr($LoopSpec,$IndexArrow+1);
+		if (substr($TemplateSegment, $Index2-5, 5) eq ',ROOT') {
+			ProcessTemplateSegment ($FlagSequence, 0, '#', substr($TemplateSegment, $IndexSegment, $IndexL-$IndexSegment));
 		} else {
-			print CODE "\n[ERROR: '>' not found in loop specification]\n";
-		}
-		if ($ForHV eq 'V') {
-			ProcessForVLoop ($FlagSequence, $NodeIndex, $Tag,  $From, $To, $SepCond, $ForType, substr($TemplateSegment , $IndexSegment, $IndexL-$IndexSegment));
-		} else {
-			ProcessForHLoop ($FlagSequence, $NodeIndex, $Tag,  $From, $To, $SepCond, $ForType, substr($TemplateSegment , $IndexSegment, $IndexL-$IndexSegment));
+			$IndexColon = index($TemplateSegment, ':');
+			if ($IndexColon > -1 && $IndexColon < $Index2) {
+				$LoopSpec = substr($TemplateSegment, $IndexColon+1, $Index2-$IndexColon-1);
+			} else {
+				print CODE "\n[ERROR: No loop specification in FOR]\n";
+				exit;
+			}
+			$IndexComma = index(substr($TemplateSegment, 0, $IndexColon), ',');
+			if ($IndexComma > -1) {
+				$Tag = substr($TemplateSegment, $IndexComma+1, $IndexColon-$IndexComma-1);
+			} else {
+				if ($DfltTag eq '*') {
+					$Tag = $StackTag[$StackIndex];
+				} else {
+					$Tag = $DfltTag;
+				}
+			}
+			$IndexColon = index($LoopSpec,':');
+			if ($IndexColon > -1) {
+				$SepCond = substr($LoopSpec,$IndexColon+1);
+				$LoopSpec = substr($LoopSpec,0,$IndexColon);
+			} else {
+				$SepCond = '';
+			}
+			if (substr($TemplateSegment,5,1) eq 'H') {
+				$ForHV = 'H';
+				$Inc = 1;
+			} elsif (substr($TemplateSegment,5,1) eq 'V') {
+				$ForHV = 'V';
+				$Inc = 1;
+			} else {
+				$ForHV = 'V'; #default
+				$Inc = 0;
+			}
+			if (substr($TemplateSegment,5+$Inc,5) eq '_CASE') {
+				$ForType = 'C';
+				if ($SepCond eq '') {
+					print CODE "\n[ERROR: No condition in FOR..CASE]\n";
+					exit;
+				} 
+			} else {
+				$ForType = 'N'; 
+			}
+			$IndexArrow = index($LoopSpec,'>');
+			if ($IndexArrow > -1) {
+				$From = substr($LoopSpec,0,$IndexArrow);
+				$To = substr($LoopSpec,$IndexArrow+1);
+			} else {
+				print CODE "\n[ERROR: '>' not found in loop specification]\n";
+			}
+			if ($ForHV eq 'V') {
+				ProcessForVLoop ($FlagSequence, $NodeIndex, $Tag,  $From, $To, $SepCond, $ForType, substr($TemplateSegment, $IndexSegment, $IndexL-$IndexSegment));
+			} else {
+				ProcessForHLoop ($FlagSequence, $NodeIndex, $Tag,  $From, $To, $SepCond, $ForType, substr($TemplateSegment, $IndexSegment, $IndexL-$IndexSegment));
+			}
 		}
 		$IndexSegment = $IndexL + 10;
 	} else {

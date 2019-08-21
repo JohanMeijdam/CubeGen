@@ -3,6 +3,12 @@ START
 CubeGen v2.8  14 March 2018
 =====================================
 Reading Model      : model.txt
+Error[21]: ':' not found
+Error[21]: ';' not found in: -
+;
+Error[22]: ':' not found
+Error[22]: ';' not found in: -
+;
 Preparing Template : template.txt
 Generating Code    : code.txt
 Ready
