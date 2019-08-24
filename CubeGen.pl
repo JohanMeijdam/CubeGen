@@ -10,7 +10,7 @@ use URI::Escape;
 # ===== ==== ==========
 #
 print "\n";
-print "CubeGen v2.8  14 March 2018\n";
+print "CubeGen v2.8.5  24 August 2019\n";
 print "=====================================\n";
 print "Reading Model      : $ModelFile\n";
 ######################################################################################
