@@ -11,7 +11,7 @@ use File::Basename;
 # ===== ==== ==========
 #
 print "\n";
-print "CubeGen v2.8.5  24 August 2019\n";
+print "CubeGen v2.8.6  11 November 2021\n";
 print "=====================================\n";
 print "Reading Model      : $ModelFile\n";
 ######################################################################################
