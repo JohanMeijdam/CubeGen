@@ -1,61 +1,197 @@
----
-AAP
-	NOOT
-		MIES
----
-	AAP
-		NOOT
-			MIES
----
-		AAP
-			NOOT
-				MIES
----
-AAP
-	NOOT
-		MIES
----
-AAP
-	NOOT
-		MIES
----
-NO TAB 
-BBB1
-CCC11
-DDD111
-CCC12
-DDD121
-DDD122
-CCC13
-DDD131
-DDD132
-DDD133
- 1 TAB 
-BBB1
-	CCC11
-		DDD111
-	CCC12
-		DDD121
-		DDD122
-	CCC13
-		DDD131
-		DDD132
-		DDD133
- 3 TAB 
-BBB1
-			CCC11
-						DDD111
-			CCC12
-						DDD121
-						DDD122
-			CCC13
-						DDD131
-						DDD132
-						DDD133
+TEST-INCLUDE
 
-*****###
-SYS:AAA
-SYS:BBB###*****
+Optie:NEE
+Optie:ABC
+AAA( )
+AAA
+	BBB1( 
+			AAA {
+				BBB1 }
+			AAA)
+	BBB1
+		CCC11( 
+				AAA {
+					BBB1 
+					CCC11 }
+				AAA
+				BBB1 {
+					CCC11 }
+				BBB1)
+		CCC11
+			DDD111( 
+					AAA {
+						BBB1 
+						CCC11 
+						DDD111 }
+					AAA
+					BBB1 {
+						CCC11 
+						DDD111 }
+					BBB1
+					CCC11 {
+						DDD111 }
+					CCC11)
+			DDD111
+		CCC12( 
+				AAA {
+					BBB1 
+					CCC12 }
+				AAA
+				BBB1 {
+					CCC12 }
+				BBB1)
+		CCC12
+			DDD121( 
+					AAA {
+						BBB1 
+						CCC12 
+						DDD121 }
+					AAA
+					BBB1 {
+						CCC12 
+						DDD121 }
+					BBB1
+					CCC12 {
+						DDD121 }
+					CCC12)
+			DDD121
+			DDD122( 
+					AAA {
+						BBB1 
+						CCC12 
+						DDD122 }
+					AAA
+					BBB1 {
+						CCC12 
+						DDD122 }
+					BBB1
+					CCC12 {
+						DDD122 }
+					CCC12)
+			DDD122
+		CCC13( 
+				AAA {
+					BBB1 
+					CCC13 }
+				AAA
+				BBB1 {
+					CCC13 }
+				BBB1)
+		CCC13
+			DDD131( 
+					AAA {
+						BBB1 
+						CCC13 
+						DDD131 }
+					AAA
+					BBB1 {
+						CCC13 
+						DDD131 }
+					BBB1
+					CCC13 {
+						DDD131 }
+					CCC13)
+			DDD131
+			DDD132( 
+					AAA {
+						BBB1 
+						CCC13 
+						DDD132 }
+					AAA
+					BBB1 {
+						CCC13 
+						DDD132 }
+					BBB1
+					CCC13 {
+						DDD132 }
+					CCC13)
+			DDD132
+			DDD133( 
+					AAA {
+						BBB1 
+						CCC13 
+						DDD133 }
+					AAA
+					BBB1 {
+						CCC13 
+						DDD133 }
+					BBB1
+					CCC13 {
+						DDD133 }
+					CCC13)
+			DDD133
+	BBB2( 
+			AAA {
+				BBB2 }
+			AAA)
+	BBB2
+		CCC21( 
+				AAA {
+					BBB2 
+					CCC21 }
+				AAA
+				BBB2 {
+					CCC21 }
+				BBB2)
+		CCC21
+		CCC22( 
+				AAA {
+					BBB2 
+					CCC22 }
+				AAA
+				BBB2 {
+					CCC22 }
+				BBB2)
+		CCC22
+		CCC23( 
+				AAA {
+					BBB2 
+					CCC23 }
+				AAA
+				BBB2 {
+					CCC23 }
+				BBB2)
+		CCC23
+###########
 
-SYS:AAA
-SYS:BBB
++BUSINESS_OBJECT_TYPE[CASE30-BOT-000000100060]:AAA|AAA_files;AAA|AAA_files[[ENDIF]]
+	+TYPE[CASE30-TYP-000000100040]:AAA|AAA|N;AAA|AAANOPT=X!!!(AAA);OPT=AB!!!(AAA);[[ENDIF]]
+		+OPTION:X|AAP;X|AAP[[ENDIF]]
+		-OPTION:;
+		+OPTION:AB|NOOT;AB|NOOT[[ENDIF]]
+		-OPTION:;
+		+TYPE[CASE30-TYP-000000100041]:BBB1|BB1|N;BBB1|BB1N[[ENDIF]]
+			+TYPE[CASE30-TYP-000000100048]:CCC11|C11|N;CCC11|C11N[[ENDIF]]
+				+TYPE[CASE30-TYP-000000100057]:DDD111|D01|N;DDD111|D01N[[ENDIF]]
+				-TYPE:;
+			-TYPE:;
+			+TYPE[CASE30-TYP-000000100049]:CCC12|C12|N;CCC12|C12N[[ENDIF]]
+				+TYPE[CASE30-TYP-000000100063]:DDD121|D11|N;DDD121|D11N[[ENDIF]]
+				-TYPE:;
+				+TYPE[CASE30-TYP-000000100062]:DDD122|D12|N;DDD122|D12N[[ENDIF]]
+				-TYPE:;
+			-TYPE:;
+			+TYPE[CASE30-TYP-000000100050]:CCC13|C13|N;CCC13|C13N[[ENDIF]]
+				+TYPE[CASE30-TYP-000000100064]:DDD131|D21|N;DDD131|D21N[[ENDIF]]
+				-TYPE:;
+				+TYPE[CASE30-TYP-000000100065]:DDD132|D22|N;DDD132|D22N[[ENDIF]]
+				-TYPE:;
+				+TYPE[CASE30-TYP-000000100066]:DDD133|D23|N;DDD133|D23N[[ENDIF]]
+				-TYPE:;
+			-TYPE:;
+		-TYPE:;
+		+TYPE[CASE30-TYP-000000100042]:BBB2|BB2|N;BBB2|BB2N[[ENDIF]]
+			+TYPE[CASE30-TYP-000000100051]:CCC21|C21|N;CCC21|C21N[[ENDIF]]
+			-TYPE:;
+			+TYPE[CASE30-TYP-000000100052]:CCC22|C22|N;CCC22|C22N[[ENDIF]]
+			-TYPE:;
+			+TYPE[CASE30-TYP-000000100053]:CCC23|C2|N;CCC23|C2N[[ENDIF]]
+			-TYPE:;
+		-TYPE:;
+	-TYPE:;
+-BUSINESS_OBJECT_TYPE:;
++SYSTEM:AAA;AAA|AAA_files[[ENDIF]]
+-SYSTEM:;
++SYSTEM:BBB;BBB|AAA_files[[ENDIF]]
+-SYSTEM:;
+###########

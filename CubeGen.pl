@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 use HTML::Entities;
 use URI::Escape;
+use File::Basename;
 #
 # CubeGenerator
 #
@@ -19,7 +20,6 @@ print "Reading Model      : $ModelFile\n";
 ######################################################################################
 $MODEL="$ModelFile";
 open MODEL, "$MODEL" or die "Cannot open $MODEL:$!";
-
 $I = 0;
 $ModelLineCount = 0;
 $Number = 1;
@@ -332,6 +332,7 @@ local $/=undef;
 
 $TEMPLATE="$TemplateFile";
 open TEMPLATE, "$TEMPLATE" or die "Cannot open $TEMPLATE:$!";
+$TemplateDirectory = dirname($TEMPLATE);
 $TemplateString = <TEMPLATE>;
 
 $CODE="$CodeFile";
@@ -404,7 +405,7 @@ my ($IncludeFile, $INCLUDE);
 			if ($Index2 > -1) {
 
 				$IncludeFile = substr($_[0], $IndexIncl+10, $Index2-$IndexIncl-10);
-				$INCLUDE = "$IncludeFile";
+				$INCLUDE = "$TemplateDirectory/$IncludeFile";
 				open INCLUDE, "$INCLUDE" or die "Cannot open $INCLUDE:$!";
 				$IncludeString = <INCLUDE>;
 				GetBody($IncludeString);

@@ -1,0 +1,14 @@
+[[INCLUDE,Includes/General.cgt]]
+[[LOOP,BUSINESS_OBJECT_TYPE]][[LOOP,TYPE]][[LOOP,OPTION]]
+Optie:[[IF:0= ]]JA[[ELSIF:0=A B]]ABC[[ELSE]]NEE[[ENDIF]][[ENDLOOP,OPTION]]
+<<TYPE:U>>( [[FORV:1>N-1]]
+		<<TYPE:U>> {[[FORV:V+1>N]]
+			<<TYPE:U>> [[ENDFOR]]}
+		<<TYPE:U>>[[ENDFOR]])
+<<TYPE:U>>[[REPEAT:TAB]][[ENDLOOP,TYPE]][[ENDLOOP,BUSINESS_OBJECT_TYPE]]
+###########
+[[LOOP,*]]
++<<*TAG>>[[IF:!ID()]][<<*:I>>][[ENDIF]]:[[VALUE,*:0>N:|]];[[VALUE,*:0>1:|]][[VALUE,*:2>N:|]][[LOOP,OPTION]]OPT=<<OPTION>>[[IF,TYPE:1=AAA]]!!![[ENDIF]](<<TYPE1>>);[[ENDLOOP,OPTION]][[ENDIF]][[REPEAT:TAB]][[LOOP,>*]]
+	><<*TAG>>:<<*:I>>;[[ENDLOOP,>*]]
+-<<*TAG>>:;[[ENDLOOP,*]]
+###########
